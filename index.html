@@ -130,4 +130,134 @@
                 <img src="https://raw.githubusercontent.com/aisyahzaahirahrr/garden-crossing/89b4cc8013761e113366ea2b6522913f620a7760/Group%2018.png" class="decor-fruit" alt="icon">
                 Micro:bit Bluetooth
             </div>
-            <p style="font-size: 11px; margin-bottom: 10px; opacity
+            <p style="font-size: 11px; margin-bottom: 10px; opacity: 0.7;">Status: <span id="status-bt">Offline</span></p>
+            <button class="btn" id="btn-connect-ble">Connect Microbit</button>
+            <button class="btn btn-dark" id="btn-disconnect-ble" disabled style="margin-top:8px;">Disconnect</button>
+        </div>
+    </div>
+
+    <div class="mode-wrap">
+        <button class="mode-btn" id="btnToggleMode">MODE: OTOMATIS</button>
+    </div>
+
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title">Ultrasonik 1 (P0/P1)</div>
+            <div class="sensor-val" id="val-jarak">--<span class="sensor-unit">cm</span></div>
+            <p style="font-size: 11px; font-weight: 700; color: #81c784;">Pompa Nyala jika ≥ 30cm</p>
+            <div style="height:60px; margin-top:10px;"><canvas id="chart-jarak"></canvas></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Ultrasonik 2 (Ember)</div>
+            <div class="sensor-val" id="val-jarak-manual" style="color:var(--accent-teal)">--<span class="sensor-unit">cm</span></div>
+            <p style="font-size: 11px; font-weight: 700; color: #fbc02d;">Monitoring Level Air Ember</p>
+            <div style="height:60px; margin-top:10px;"><canvas id="chart-jarak-manual"></canvas></div>
+        </div>
+    </div>
+
+    <div class="card relay-card" id="card-relay" style="text-align: center; max-width: 400px; margin: 0 auto 20px;">
+        <img src="https://raw.githubusercontent.com/aisyahzaahirahrr/garden-crossing/89b4cc8013761e113366ea2b6522913f620a7760/Group%2019.png" style="width: 80px; margin-bottom: 10px;" alt="relay">
+        <div style="font-weight: 900; font-size: 1.2em;">POMPA RELAY (P13)</div>
+        <div class="relay-status" id="lbl-relay">OFF</div>
+        
+        <div id="manual-relay" style="display:none; margin-top:15px;">
+            <label style="font-weight: 800; font-size: 0.8em;">KONTROL MANUAL:</label>
+            <input type="checkbox" id="sw-relay" onchange="window.toggleRelay(this.checked)" style="width:25px; height:25px; vertical-align:middle;">
+        </div>
+    </div>
+
+    <div class="terminal">
+        <div style="display:flex; justify-content: space-between; margin-bottom:8px;">
+            <span style="color:white; font-weight:900; font-size:12px;">SYSTEM LOG</span>
+            <button id="btnClearLog" style="background:none; border:1px solid white; color:white; border-radius:10px; padding:2px 8px; font-size:10px; cursor:pointer;">Clear</button>
+        </div>
+        <div id="terminalLog" class="log-panel"></div>
+    </div>
+</div>
+
+<script type="module">
+// LOGIKA JAVASCRIPT ASLI (TIDAK BERUBAH)
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+const state = {
+    db: null, path: "", device: null, txChar: null, rxChar: null,
+    bleConnected: false, bleBuffer: "", modeOtomatis: 1, charts: {}
+};
+
+const $ = id => document.getElementById(id);
+
+function log(msg, color = "#e0f2f1") {
+    const t = new Date().toLocaleTimeString('id-ID', { hour12: false });
+    $('terminalLog').insertAdjacentHTML('afterbegin', `<div style="color:${color}">[${t}] ${msg}</div>`);
+}
+
+// Sinkronisasi UI Mode
+function applyMode(isAuto) {
+    state.modeOtomatis = isAuto ? 1 : 0;
+    $('btnToggleMode').innerText = `MODE: ${isAuto ? 'OTOMATIS' : 'MANUAL'}`;
+    $('manual-relay').style.display = isAuto ? 'none' : 'block';
+    if (state.bleConnected) sendBLE("mode", state.modeOtomatis);
+}
+$('btnToggleMode').onclick = () => applyMode(state.modeOtomatis === 0);
+
+// Bluetooth Logic
+async function connectBLE() {
+    try {
+        state.device = await navigator.bluetooth.requestDevice({
+            filters: [{ namePrefix: "BBC micro:bit" }],
+            optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]
+        });
+        const server = await state.device.gatt.connect();
+        const service = await server.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+        state.txChar = await service.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+        state.rxChar = await service.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
+        await state.txChar.startNotifications();
+        state.txChar.addEventListener("characteristicvaluechanged", (e) => {
+            let decoder = new TextDecoder();
+            state.bleBuffer += decoder.decode(e.target.value);
+            const lines = state.bleBuffer.split('\n');
+            state.bleBuffer = lines.pop();
+            lines.forEach(line => {
+                const [key, val] = line.trim().split(',');
+                if (key === "jarak") $('val-jarak').innerHTML = `${val}<span class="sensor-unit">cm</span>`;
+                if (key === "jarak_manual") $('val-jarak-manual').innerHTML = `${val}<span class="sensor-unit">cm</span>`;
+                if (key === "Relay") {
+                    const isOn = val == "1";
+                    $('lbl-relay').innerText = isOn ? "ON" : "OFF";
+                    if(isOn) $('card-relay').classList.add('on'); else $('card-relay').classList.remove('on');
+                }
+            });
+        });
+        state.bleConnected = true;
+        $('status-bt').innerText = "Connected";
+        $('btn-connect-ble').disabled = true;
+        $('btn-disconnect-ble').disabled = false;
+        log("Micro:bit Connected!", "#81c784");
+    } catch (e) { log("BLE Error: " + e.message, "#ef5350"); }
+}
+
+async function sendBLE(key, val) {
+    if (!state.rxChar) return;
+    await state.rxChar.writeValue(new TextEncoder().encode(`${key},${val}\n`));
+}
+
+window.toggleRelay = (val) => sendBLE("Relay", val ? 1 : 0);
+
+// Firebase Logic
+$('btn-connect-fb').onclick = async () => {
+    const config = { apiKey: $('fb-apiKey').value, databaseURL: $('fb-dbUrl').value };
+    const app = initializeApp(config);
+    state.db = getDatabase(app);
+    state.path = $('fb-path').value;
+    onValue(ref(state.db, state.path), (snap) => {
+        log("Firebase Data Updated", "#4db6ac");
+    });
+};
+
+$('btn-connect-ble').onclick = connectBLE;
+$('btnClearLog').onclick = () => $('terminalLog').innerHTML = '';
+</script>
+</body>
+</html>
