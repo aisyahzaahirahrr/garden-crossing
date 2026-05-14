@@ -217,4 +217,215 @@
 
     <div class="terminal-container">
         <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-            <div style="font-weight:900; font-size
+            <div style="font-weight:900; font-size:13px;">SYSTEM TERMINAL</div>
+            <button id="btnClearLog" style="background:none; border:1px solid rgba(255,255,255,0.6); color:white; border-radius:12px; padding:4px 14px; font-size:11px;">Clear</button>
+        </div>
+        <div id="terminalLog" class="log-screen"></div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp, getApps, deleteApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+const SVC = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const RX  = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; 
+const TX  = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; 
+
+const S = {
+    db: null, 
+    fbPath: "smarthome/ruangan1",
+    device: null, 
+    rxChar: null, 
+    bleBuffer: '',
+    mode: 'auto',
+    relay: false,
+    charts: {}
+};
+
+const $ = id => document.getElementById(id);
+
+function log(msg, color = "#e0f2f1") {
+    const t = new Date().toLocaleTimeString('id-ID', { hour12: false });
+    const term = $('terminalLog');
+    term.insertAdjacentHTML('afterbegin', `<div style="color:${color}">[${t}] ${msg}</div>`);
+    if (term.children.length > 70) term.removeChild(term.lastChild);
+}
+
+function initCharts() {
+    const cfg = (color) => ({
+        type: 'line', 
+        data: { labels: [], datasets: [{ data: [], borderColor: color, tension: 0.4, pointRadius: 0, borderWidth: 2.5 }] },
+        options: { 
+            plugins: { legend: { display: false } }, 
+            scales: { x: { display: false }, y: { display: false } }, 
+            responsive: true, 
+            maintainAspectRatio: false 
+        }
+    });
+    S.charts.jarak = new Chart($('chart-jarak').getContext('2d'), cfg('#5c6bc0'));
+    S.charts.jarak_manual = new Chart($('chart-jarak-manual').getContext('2d'), cfg('#26a69a'));
+}
+
+function pushToChart(key, val) {
+    const chart = S.charts[key];
+    if (!chart) return;
+    chart.data.labels.push('');
+    chart.data.datasets[0].data.push(val);
+    if (chart.data.labels.length > 25) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+    }
+    chart.update('none');
+}
+
+function updateModeUI() {
+    const isAuto = S.mode === 'auto';
+    $('mode-auto').classList.toggle('active', isAuto);
+    $('mode-manual').classList.toggle('active', !isAuto);
+    $('manual-relay-ui').style.display = isAuto ? 'none' : 'flex';
+}
+
+function updateRelayUI(isOn) {
+    S.relay = isOn;
+    $('lbl-relay').textContent = isOn ? "ON" : "OFF";
+    if (isOn) $('card-relay').classList.add('on');
+    else $('card-relay').classList.remove('on');
+}
+
+window.manualRelay = (val) => {
+    if (S.mode !== 'manual') {
+        alert("❌ Harus dalam mode MANUAL!");
+        return;
+    }
+    sendBLE('Relay', val);
+    updateRelayUI(val === 1);
+    if (S.db) update(ref(S.db, `${S.fbPath}/Relay`), { value: val });
+    log(`Relay manual → ${val === 1 ? 'ON' : 'OFF'}`, "#81c784");
+};
+
+async function connectBLE() {
+    try {
+        log("Mencari micro:bit...", "#ffcc5c");
+        S.device = await navigator.bluetooth.requestDevice({ 
+            filters: [{ namePrefix: "BBC micro:bit" }], 
+            optionalServices: [SVC] 
+        });
+        S.device.addEventListener('gattserverdisconnected', () => {
+            $('status-bt').textContent = "BT OFFLINE";
+            $('status-bt').classList.remove('online');
+            log("BLE Disconnected", "#ff8a65");
+        });
+
+        const server = await S.device.gatt.connect();
+        const service = await server.getPrimaryService(SVC);
+        S.rxChar = await service.getCharacteristic(RX);
+        
+        const txChar = await service.getCharacteristic(TX);
+        await txChar.startNotifications();
+        txChar.addEventListener("characteristicvaluechanged", e => {
+            S.bleBuffer += new TextDecoder().decode(e.target.value);
+            const lines = S.bleBuffer.split('\n');
+            S.bleBuffer = lines.pop() || '';
+            lines.forEach(line => handleIncoming(line.trim()));
+        });
+
+        $('status-bt').textContent = "BT CONNECTED";
+        $('status-bt').classList.add('online');
+        $('btn-connect-ble').style.display = 'none';
+        $('btn-disconnect-ble').style.display = 'block';
+        log("BLE Connected!", "#81c784");
+    } catch (e) { 
+        log("BLE Error: " + e.message, "#ff8a65"); 
+    }
+}
+
+function handleIncoming(txt) {
+    if (!txt || !txt.includes(':')) return;
+    const [key, valStr] = txt.split(':');
+    const val = valStr.trim();
+    const num = parseFloat(val);
+
+    log(`RX ← ${key}:${val}`, "#a8ff78");
+
+    if (key === "jarak") {
+        $('val-jarak').innerHTML = `${num}<span class="sensor-unit"> CM</span>`;
+        pushToChart("jarak", num);
+    }
+    if (key === "jarak_manual") {
+        $('val-jarak-manual').innerHTML = `${num}<span class="sensor-unit"> CM</span>`;
+        pushToChart("jarak_manual", num);
+    }
+    if (key === "suhu" || key === "temp") {
+        $('val-temp').textContent = num;
+    }
+    if (key === "Relay") {
+        updateRelayUI(num === 1);
+    }
+    if (key === "mode") {
+        S.mode = (num === 1) ? 'auto' : 'manual';
+        updateModeUI();
+    }
+
+    if (S.db) {
+        update(ref(S.db, `${S.fbPath}/${key}`), { value: num || val }).catch(() => {});
+    }
+}
+
+async function sendBLE(key, val) {
+    if (!S.rxChar) return log("BLE belum terhubung!", "#ff8a65");
+    const payload = `${key},${val}\n`;
+    try {
+        await S.rxChar.writeValue(new TextEncoder().encode(payload));
+        log(`TX → ${key},${val}`, "#ffff66");
+    } catch (e) {
+        log("TX Error: " + e.message, "#ff8a65");
+    }
+}
+
+async function connectFirebase() {
+    const apiKey = $('fb-apiKey').value.trim();
+    const databaseURL = $('fb-dbUrl').value.trim();
+    const path = $('fb-path').value.trim() || S.fbPath;
+    if (!apiKey || !databaseURL) return alert("Isi API Key dan Database URL!");
+
+    try {
+        if (getApps().length) await deleteApp(getApps()[0]);
+        const app = initializeApp({ apiKey, databaseURL });
+        S.db = getDatabase(app);
+        S.fbPath = path;
+
+        onValue(ref(S.db, path), snap => {
+            const d = snap.val();
+            if (!d) return;
+            if (d.jarak) $('val-jarak').innerHTML = `${d.jarak.value}<span class="sensor-unit"> CM</span>`;
+            if (d.jarak_manual) $('val-jarak-manual').innerHTML = `${d.jarak_manual.value}<span class="sensor-unit"> CM</span>`;
+            if (d.suhu) $('val-temp').textContent = d.suhu.value;
+            if (d.Relay !== undefined) updateRelayUI(d.Relay.value === 1);
+            if (d.mode !== undefined) {
+                S.mode = (d.mode.value === 1) ? 'auto' : 'manual';
+                updateModeUI();
+            }
+        });
+
+        $('status-fb').textContent = "DB SYNCED";
+        $('status-fb').classList.add('online');
+        log("Firebase Connected!", "#81c784");
+    } catch (e) { 
+        log("Firebase Error: " + e.message, "#ff8a65"); 
+    }
+}
+
+$('mode-auto').onclick = () => { S.mode = 'auto'; updateModeUI(); sendBLE("mode", 1); };
+$('mode-manual').onclick = () => { S.mode = 'manual'; updateModeUI(); sendBLE("mode", 0); };
+$('btn-connect-ble').onclick = connectBLE;
+$('btn-disconnect-ble').onclick = () => { if(S.device) S.device.gatt.disconnect(); };
+$('btn-connect-fb').onclick = connectFirebase;
+$('btnClearLog').onclick = () => $('terminalLog').innerHTML = '';
+
+log("Garden Crossing siap 🌱", "#81c784");
+initCharts();
+updateModeUI();
+</script>
+</body>
+</html>
