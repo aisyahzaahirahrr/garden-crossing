@@ -31,7 +31,53 @@
 
         .wrapper { max-width: 960px; margin: 0 auto; position: relative; z-index: 2; }
 
-        /* Dekorasi Hewan di Pinggir */
+        /* --- Style Header & Tupai Baru --- */
+        .header { 
+            text-align: center; 
+            margin: 60px 0 35px; /* Margin atas ditambah agar tupai tidak terpotong */
+        }
+
+        .logo-container {
+            position: relative;
+            display: inline-block;
+            width: 320px; /* Menyesuaikan ukuran logo */
+        }
+
+        .logo-main { 
+            width: 100%; 
+            filter: drop-shadow(0 8px 15px rgba(0,0,0,0.12)); 
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-squirrel {
+            position: absolute;
+            width: 90px; /* Ukuran sama untuk semua tupai */
+            z-index: 1;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+
+        /* Posisi Tupai Kuning (Kiri) */
+        .sq-yellow {
+            top: -45px;
+            left: 5px;
+        }
+
+        /* Posisi Tupai Merah (Tengah) */
+        .sq-red {
+            top: -65px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Posisi Tupai Biru (Kanan) */
+        .sq-blue {
+            top: -45px;
+            right: 5px;
+        }
+        /* --------------------------------- */
+
+        /* Dekorasi Hewan di Pinggir (Bawah) */
         .char-left {
             position: fixed;
             bottom: 20px;
@@ -53,9 +99,6 @@
         .status-fixed { position: fixed; top: 15px; right: 15px; z-index: 100; display: flex; flex-direction: column; gap: 6px; }
         .badge { background: white; padding: 6px 16px; border-radius: 30px; font-size: 0.82em; font-weight: 900; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .badge.online { color: var(--accent-green); border: 2px solid var(--accent-green); }
-
-        .header { text-align: center; margin: 20px 0 35px; }
-        .logo-main { width: 300px; filter: drop-shadow(0 8px 15px rgba(0,0,0,0.12)); }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 28px; }
         .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; margin-bottom: 28px; }
@@ -86,7 +129,6 @@
             justify-content: center; gap: 8px; color: white;
             box-shadow: 0 5px 0 rgba(0,0,0,0.1); transition: 0.2s;
         }
-        .btn:active { transform: translateY(3px); box-shadow: none; }
         .btn-fb { background: #4db6ac; }
         .btn-ble { background: #26a69a; }
 
@@ -130,7 +172,6 @@
             box-shadow: 0 6px 15px rgba(38, 166, 154, 0.3);
         }
 
-        /* Responsive Fix */
         @media (max-width: 768px) {
             .grid-2 { grid-template-columns: 1fr; }
             .char-left, .char-right { width: 80px; opacity: 0.6; }
@@ -149,7 +190,13 @@
 
 <div class="wrapper">
     <div class="header">
-        <img src="https://raw.githubusercontent.com/aisyahzaahirahrr/garden-crossing/89b4cc8013761e113366ea2b6522913f620a7760/Group%203.png" class="logo-main">
+        <div class="logo-container">
+            <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/tupai%20kuning.png?raw=true" class="header-squirrel sq-yellow" alt="Tupai Kuning">
+            <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/tupai%20merah.png?raw=true" class="header-squirrel sq-red" alt="Tupai Merah">
+            <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/tupai%20biru.png?raw=true" class="header-squirrel sq-blue" alt="Tupai Biru">
+            
+            <img src="https://raw.githubusercontent.com/aisyahzaahirahrr/garden-crossing/89b4cc8013761e113366ea2b6522913f620a7760/Group%203.png" class="logo-main">
+        </div>
         <br>
         <div class="subtitle-pill">Monitoring & Control Otomatis</div>
     </div>
@@ -249,7 +296,6 @@ function log(msg, color = "#e0f2f1") {
     const t = new Date().toLocaleTimeString('id-ID', { hour12: false });
     const term = $('terminalLog');
     term.insertAdjacentHTML('afterbegin', `<div style="color:${color}">[${t}] ${msg}</div>`);
-    if (term.children.length > 70) term.removeChild(term.lastChild);
 }
 
 function initCharts() {
@@ -301,7 +347,6 @@ window.manualRelay = (val) => {
     sendBLE('Relay', val);
     updateRelayUI(val === 1);
     if (S.db) update(ref(S.db, `${S.fbPath}/Relay`), { value: val });
-    log(`Relay manual → ${val === 1 ? 'ON' : 'OFF'}`, "#81c784");
 };
 
 async function connectBLE() {
@@ -311,16 +356,9 @@ async function connectBLE() {
             filters: [{ namePrefix: "BBC micro:bit" }], 
             optionalServices: [SVC] 
         });
-        S.device.addEventListener('gattserverdisconnected', () => {
-            $('status-bt').textContent = "BT OFFLINE";
-            $('status-bt').classList.remove('online');
-            log("BLE Disconnected", "#ff8a65");
-        });
-
         const server = await S.device.gatt.connect();
         const service = await server.getPrimaryService(SVC);
         S.rxChar = await service.getCharacteristic(RX);
-        
         const txChar = await service.getCharacteristic(TX);
         await txChar.startNotifications();
         txChar.addEventListener("characteristicvaluechanged", e => {
@@ -329,15 +367,12 @@ async function connectBLE() {
             S.bleBuffer = lines.pop() || '';
             lines.forEach(line => handleIncoming(line.trim()));
         });
-
         $('status-bt').textContent = "BT CONNECTED";
         $('status-bt').classList.add('online');
         $('btn-connect-ble').style.display = 'none';
         $('btn-disconnect-ble').style.display = 'block';
         log("BLE Connected!", "#81c784");
-    } catch (e) { 
-        log("BLE Error: " + e.message, "#ff8a65"); 
-    }
+    } catch (e) { log("BLE Error: " + e.message, "#ff8a65"); }
 }
 
 function handleIncoming(txt) {
@@ -345,75 +380,42 @@ function handleIncoming(txt) {
     const [key, valStr] = txt.split(':');
     const val = valStr.trim();
     const num = parseFloat(val);
-
     log(`RX ← ${key}:${val}`, "#a8ff78");
-
-    if (key === "jarak") {
-        $('val-jarak').innerHTML = `${num}<span class="sensor-unit"> CM</span>`;
-        pushToChart("jarak", num);
-    }
-    if (key === "jarak_manual") {
-        $('val-jarak-manual').innerHTML = `${num}<span class="sensor-unit"> CM</span>`;
-        pushToChart("jarak_manual", num);
-    }
-    if (key === "suhu" || key === "temp") {
-        $('val-temp').textContent = num;
-    }
-    if (key === "Relay") {
-        updateRelayUI(num === 1);
-    }
-    if (key === "mode") {
-        S.mode = (num === 1) ? 'auto' : 'manual';
-        updateModeUI();
-    }
-
-    if (S.db) {
-        update(ref(S.db, `${S.fbPath}/${key}`), { value: num || val }).catch(() => {});
-    }
+    if (key === "jarak") { $('val-jarak').innerHTML = `${num}<span class="sensor-unit"> CM</span>`; pushToChart("jarak", num); }
+    if (key === "jarak_manual") { $('val-jarak-manual').innerHTML = `${num}<span class="sensor-unit"> CM</span>`; pushToChart("jarak_manual", num); }
+    if (key === "suhu" || key === "temp") { $('val-temp').textContent = num; }
+    if (key === "Relay") { updateRelayUI(num === 1); }
+    if (key === "mode") { S.mode = (num === 1) ? 'auto' : 'manual'; updateModeUI(); }
+    if (S.db) { update(ref(S.db, `${S.fbPath}/${key}`), { value: num || val }).catch(() => {}); }
 }
 
 async function sendBLE(key, val) {
-    if (!S.rxChar) return log("BLE belum terhubung!", "#ff8a65");
+    if (!S.rxChar) return;
     const payload = `${key},${val}\n`;
     try {
         await S.rxChar.writeValue(new TextEncoder().encode(payload));
         log(`TX → ${key},${val}`, "#ffff66");
-    } catch (e) {
-        log("TX Error: " + e.message, "#ff8a65");
-    }
+    } catch (e) { log("TX Error: " + e.message, "#ff8a65"); }
 }
 
 async function connectFirebase() {
     const apiKey = $('fb-apiKey').value.trim();
     const databaseURL = $('fb-dbUrl').value.trim();
-    const path = $('fb-path').value.trim() || S.fbPath;
     if (!apiKey || !databaseURL) return alert("Isi API Key dan Database URL!");
-
     try {
         if (getApps().length) await deleteApp(getApps()[0]);
         const app = initializeApp({ apiKey, databaseURL });
         S.db = getDatabase(app);
-        S.fbPath = path;
-
-        onValue(ref(S.db, path), snap => {
+        onValue(ref(S.db, S.fbPath), snap => {
             const d = snap.val();
             if (!d) return;
-            if (d.jarak) $('val-jarak').innerHTML = `${d.jarak.value}<span class="sensor-unit"> CM</span>`;
-            if (d.jarak_manual) $('val-jarak-manual').innerHTML = `${d.jarak_manual.value}<span class="sensor-unit"> CM</span>`;
-            if (d.suhu) $('val-temp').textContent = d.suhu.value;
             if (d.Relay !== undefined) updateRelayUI(d.Relay.value === 1);
-            if (d.mode !== undefined) {
-                S.mode = (d.mode.value === 1) ? 'auto' : 'manual';
-                updateModeUI();
-            }
+            if (d.mode !== undefined) { S.mode = (d.mode.value === 1) ? 'auto' : 'manual'; updateModeUI(); }
         });
-
         $('status-fb').textContent = "DB SYNCED";
         $('status-fb').classList.add('online');
         log("Firebase Connected!", "#81c784");
-    } catch (e) { 
-        log("Firebase Error: " + e.message, "#ff8a65"); 
-    }
+    } catch (e) { log("Firebase Error: " + e.message, "#ff8a65"); }
 }
 
 $('mode-auto').onclick = () => { S.mode = 'auto'; updateModeUI(); sendBLE("mode", 1); };
@@ -423,7 +425,6 @@ $('btn-disconnect-ble').onclick = () => { if(S.device) S.device.gatt.disconnect(
 $('btn-connect-fb').onclick = connectFirebase;
 $('btnClearLog').onclick = () => $('terminalLog').innerHTML = '';
 
-log("Garden Crossing siap 🌱", "#81c784");
 initCharts();
 updateModeUI();
 </script>
