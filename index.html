@@ -29,16 +29,18 @@
             overflow-x: hidden;
         }
 
-        /* --- Dekorasi Samping & Jarak Antar Elemen --- */
+        /* --- Dekorasi Samping Posisi Tengah --- */
         .side-decor-stack {
             position: fixed;
-            top: 75px;    /* Jarak dari atas layar agar tidak menabrak badge */
+            /* Mengatur posisi agar berada di tengah layar secara vertikal */
+            top: 50%;
+            transform: translateY(-50%); 
             z-index: 1;
             display: flex;
             flex-direction: column; 
             align-items: center;
-            gap: 40px;    /* Jarak antar element yang pas (tidak kejauhan/kedeketan) */
-            width: 110px;
+            gap: 35px; /* Jarak antar elemen yang pas */
+            width: 100px;
         }
 
         .side-decor-stack img {
@@ -47,40 +49,40 @@
             filter: drop-shadow(0 8px 15px rgba(0,0,0,0.12));
         }
 
-        .left-stack { left: 40px; }
-        .right-stack { right: 40px; }
+        .left-stack { left: 45px; }
+        .right-stack { right: 45px; }
 
-        /* --- Animasi Kustom --- */
+        /* --- Animasi Kustom (Tetap Dipertahankan) --- */
 
-        /* 1. Takoyaki Muter */
+        /* Takoyaki Muter */
         @keyframes rotateTakoyaki {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
         .anim-rotate { animation: rotateTakoyaki 8s linear infinite; }
 
-        /* 2. Koin Besar Kecil */
+        /* Koin Besar Kecil */
         @keyframes pulseCoin {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.15); }
         }
         .anim-pulse { animation: pulseCoin 2s ease-in-out infinite; }
 
-        /* 3. Tupai Merah Goyang */
+        /* Tupai Merah Goyang */
         @keyframes shakeRed {
             0%, 100% { transform: rotate(-5deg); }
             50% { transform: rotate(5deg); }
         }
         .anim-shake { animation: shakeRed 1.5s ease-in-out infinite; }
 
-        /* 4. Tupai Biru Lompat */
+        /* Tupai Biru Lompat */
         @keyframes jumpBlue {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-25px); }
+            50% { transform: translateY(-20px); }
         }
         .anim-jump { animation: jumpBlue 1.2s ease-in-out infinite; }
 
-        /* 5. Daun Melayang (Existing) */
+        /* Daun Melayang */
         @keyframes leafFloat {
             0% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-10px) rotate(5deg); }
@@ -88,14 +90,14 @@
         }
         .anim-leaf { animation: leafFloat 3s ease-in-out infinite; }
 
-        /* 6. Tupai Krem Squeeze (Memuai) */
+        /* Tupai Krem Squeeze */
         @keyframes squeezeCream {
             0%, 100% { transform: scaleX(1) scaleY(1); }
             50% { transform: scaleX(1.1) scaleY(0.9); }
         }
         .anim-squeeze { animation: squeezeCream 2s ease-in-out infinite; }
 
-        /* --- UI Utama --- */
+        /* --- UI Utama (Tidak Mengubah Tombol Lain) --- */
         .wrapper { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
         .header { text-align: center; margin: 40px 0 35px; }
         .logo-container { position: relative; display: inline-block; width: 280px; }
@@ -104,12 +106,8 @@
         .status-fixed { position: fixed; top: 15px; right: 15px; z-index: 100; display: flex; flex-direction: column; gap: 6px; }
         .badge { background: white; padding: 6px 16px; border-radius: 30px; font-size: 0.82em; font-weight: 900; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #eee; }
         
-        .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px; }
-        .card { background: var(--panel-bg); border-radius: var(--border-radius); padding: 25px; border: 5px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
-        .card-title { font-size: 0.85em; font-weight: 900; text-transform: uppercase; color: var(--accent-teal); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        
         @media (max-width: 1200px) {
-            .side-decor-stack { width: 80px; left: 15px; right: 15px; gap: 30px; }
+            .side-decor-stack { width: 80px; left: 15px; right: 15px; gap: 25px; }
         }
         @media (max-width: 1000px) {
             .side-decor-stack { display: none; }
@@ -120,7 +118,7 @@
 
 <div class="side-decor-stack left-stack">
     <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/Group%2019.png?raw=true" class="anim-shake" alt="Red">
-    <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/Group%209.png?raw=true" class="anim-pulse" style="width: 70%;" alt="Coin">
+    <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/Group%209.png?raw=true" class="anim-pulse" style="width: 75%;" alt="Coin">
     <img src="https://raw.githubusercontent.com/aisyahzaahirahrr/garden-crossing/89b4cc8013761e113366ea2b6522913f620a7760/Group%2012.png" class="anim-rotate" style="width: 85%;" alt="Takoyaki">
 </div>
 
@@ -131,8 +129,8 @@
 </div>
 
 <div class="status-fixed">
-    <div class="badge" id="status-bt">BT OFFLINE</div>
-    <div class="badge" id="status-fb">DB OFFLINE</div>
+    <div class="badge">BT OFFLINE</div>
+    <div class="badge">DB OFFLINE</div>
 </div>
 
 <div class="wrapper">
@@ -140,20 +138,8 @@
         <div class="logo-container">
             <img src="https://raw.githubusercontent.com/aisyahzaahirahrr/garden-crossing/89b4cc8013761e113366ea2b6522913f620a7760/Group%203.png" class="logo-main">
         </div>
-        <div style="margin-top:15px;"><span style="background:white; padding:6px 20px; border-radius:20px; font-weight:800; color:var(--accent-teal); font-size: 0.9em; border: 2px solid #b2dfdb;">Monitoring & Control Otomatis</span></div>
     </div>
-
-    <div class="grid-main">
-        <div class="card">
-            <div class="card-title">Suhu Udara</div>
-            <div style="font-size: 2.5em; font-weight: 900; color:#ef5350;">28°C</div>
-        </div>
-        <div class="card">
-            <div class="card-title">Level Air</div>
-            <div style="font-size: 2.5em; font-weight: 900; color:#26a69a;">15 CM</div>
-        </div>
     </div>
-</div>
 
 </body>
-</html
+</html>
