@@ -29,7 +29,7 @@
             overflow-x: hidden;
         }
 
-        /* --- Dekorasi Samping Posisi Tengah & Animasi --- */
+        /* --- Dekorasi Samping & Animasi --- */
         .side-decor-stack {
             position: fixed;
             top: 55%; 
@@ -42,31 +42,21 @@
             width: 100px;
         }
 
-        .side-decor-stack img {
-            width: 100%;
-            height: auto;
-            filter: drop-shadow(0 8px 15px rgba(0,0,0,0.12));
-        }
-
+        .side-decor-stack img { width: 100%; height: auto; filter: drop-shadow(0 8px 15px rgba(0,0,0,0.12)); }
         .left-stack { left: 45px; }
         .right-stack { right: 45px; }
 
-        /* Keyframes Animasi */
+        /* Animasi */
         @keyframes rotateTako { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .anim-rotate { animation: rotateTako 8s linear infinite; }
-
         @keyframes pulseCoin { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
         .anim-pulse { animation: pulseCoin 2s ease-in-out infinite; }
-
         @keyframes shakeRed { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
         .anim-shake { animation: shakeRed 1.5s ease-in-out infinite; }
-
         @keyframes jumpBlue { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         .anim-jump { animation: jumpBlue 1.2s ease-in-out infinite; }
-
         @keyframes leafFloat { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(5deg); } }
         .anim-leaf { animation: leafFloat 3s ease-in-out infinite; }
-
         @keyframes squeezeCream { 0%, 100% { transform: scaleX(1) scaleY(1); } 50% { transform: scaleX(1.1) scaleY(0.9); } }
         .anim-squeeze { animation: squeezeCream 2s ease-in-out infinite; }
 
@@ -76,7 +66,7 @@
         .logo-container { position: relative; display: inline-block; width: 320px; }
         .logo-main { width: 100%; filter: drop-shadow(0 8px 15px rgba(0,0,0,0.12)); position: relative; z-index: 2; }
         
-        .header-squirrel { position: absolute; width: 90px; z-index: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); }
+        .header-squirrel { position: absolute; width: 90px; z-index: 1; }
         .sq-yellow { top: -45px; left: 5px; }
         .sq-red { top: -65px; left: 50%; transform: translateX(-50%); }
         .sq-blue { top: -45px; right: 5px; }
@@ -88,11 +78,10 @@
         .card { background: var(--panel-bg); border-radius: var(--border-radius); padding: 26px; border: 5px solid white; box-shadow: 0 12px 35px rgba(0,0,0,0.08); }
         .card-title { font-size: 0.85em; font-weight: 900; text-transform: uppercase; color: var(--accent-teal); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
         
-        label { font-size: 11px; font-weight: 800; color: #90a4ae; margin-left: 10px; text-transform: uppercase; }
-        input { width: 100%; padding: 13px 18px; border-radius: 22px; border: 2px solid #e0f2f1; margin-bottom: 10px; font-weight: 700; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--accent-teal); }
+        label { font-size: 11px; font-weight: 800; color: #90a4ae; margin-left: 10px; }
+        input { width: 100%; padding: 13px 18px; border-radius: 22px; border: 2px solid #e0f2f1; margin-bottom: 10px; font-weight: 700; outline: none; }
         
-        .btn { width: 100%; padding: 14px; border-radius: 28px; border: none; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; transition: 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+        .btn { width: 100%; padding: 14px; border-radius: 28px; border: none; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
         .btn-fb { background: #4db6ac; }
         .btn-ble { background: #26a69a; }
 
@@ -139,35 +128,32 @@
     <div class="grid-main">
         <div class="card">
             <div class="card-title"><i class="fas fa-cloud"></i> Firebase Sync</div>
-            <label>API Key</label>
-            <input type="text" id="fb-apiKey" placeholder="AIzaSy...">
-            <label>Database URL</label>
-            <input type="text" id="fb-dbUrl" placeholder="https://project-id.firebaseio.com">
-            <label>Node Path</label>
-            <input type="text" id="fb-nodePath" placeholder="misal: garden/sensors">
+            <label>API Key</label><input type="text" id="fb-apiKey" placeholder="AIzaSy...">
+            <label>Database URL</label><input type="text" id="fb-dbUrl" placeholder="https://...">
+            <label>Node Path</label><input type="text" id="fb-nodePath" placeholder="garden/sensors">
             <button class="btn btn-fb" id="btn-connect-fb">Connect Firebase</button>
         </div>
         <div class="card">
             <div class="card-title"><i class="fab fa-bluetooth"></i> Bluetooth BLE</div>
-            <p style="font-size:12px; margin-bottom:15px; color:#90a4ae;">Gunakan Chrome & HTTPS untuk koneksi lancar.</p>
+            <p style="font-size:12px; margin-bottom:15px; color:#90a4ae;">Pastikan Micro:bit menyalakan UART Service.</p>
             <button class="btn btn-ble" id="btn-connect-ble">Connect Microbit</button>
         </div>
     </div>
 
     <div class="grid-main">
         <div class="card">
-            <div class="card-title"><i class="fas fa-tint"></i> Ultrasonik 1</div>
+            <div class="card-title"><i class="fas fa-tint"></i> Jarak Air</div>
             <div class="sensor-val" id="val-jarak">--<span class="sensor-unit"> CM</span></div>
         </div>
         <div class="card">
-            <div class="card-title"><i class="fas fa-thermometer-half"></i> DHT22</div>
+            <div class="card-title"><i class="fas fa-thermometer-half"></i> Suhu Udara</div>
             <div class="sensor-val" style="color:#ef5350;"><span id="val-temp">--</span>°C</div>
         </div>
     </div>
 
     <div class="card" style="text-align:center; margin-bottom:30px;">
-        <div class="card-title" style="justify-content:center;"><i class="fas fa-bolt"></i> POMPA STATUS</div>
-        <div class="relay-status" id="lbl-relay" style="font-size:3em; font-weight:900;">OFF</div>
+        <div class="card-title" style="justify-content:center;"><i class="fas fa-bolt"></i> STATUS POMPA</div>
+        <div class="relay-status" id="lbl-relay" style="font-size:3em; font-weight:900; color: #90a4ae;">OFF</div>
     </div>
 
     <div class="terminal-container">
@@ -180,37 +166,48 @@
 </div>
 
 <script>
-    // --- JAVASCRIPT LOGIC ---
     let bluetoothDevice;
-    let uartCharacteristic;
-
-    const terminalLog = document.getElementById('terminalLog');
-    const btnConnectBle = document.getElementById('btn-connect-ble');
-    const btnConnectFb = document.getElementById('btn-connect-fb');
+    let terminalLog = document.getElementById('terminalLog');
+    let btnConnectBle = document.getElementById('btn-connect-ble');
 
     function logToTerminal(msg) {
-        const p = document.createElement('p');
+        let p = document.createElement('p');
         p.textContent = `> ${msg}`;
         terminalLog.appendChild(p);
         terminalLog.scrollTop = terminalLog.scrollHeight;
     }
 
-    // Fungsi Connect Firebase (UI Only - Logika SDK bisa ditambahkan di sini)
-    btnConnectFb.addEventListener('click', () => {
-        const path = document.getElementById('fb-nodePath').value;
-        const dbUrl = document.getElementById('fb-dbUrl').value;
+    // --- LOGIKA UTAMA PARSING DATA MICROBIT ---
+    function updateUI(dataRaw) {
+        // Bersihkan data dari whitespace
+        let data = dataRaw.trim();
+
+        // 1. Cek Data Jarak (Mulai dengan J)
+        if (data.startsWith('J')) {
+            let val = data.substring(1); 
+            document.getElementById('val-jarak').innerHTML = `${val}<span class="sensor-unit"> CM</span>`;
+        } 
         
-        if(!path || !dbUrl) {
-            logToTerminal("Gagal: Database URL & Node Path harus diisi!");
-            return;
+        // 2. Cek Data Suhu (Mulai dengan T)
+        else if (data.startsWith('T')) {
+            let val = data.substring(1);
+            document.getElementById('val-temp').textContent = val;
         }
 
-        logToTerminal(`Firebase dihubungkan ke jalur: ${path}`);
-        document.getElementById('status-fb').textContent = "DB ONLINE";
-        document.getElementById('status-fb').style.color = "#26a69a";
-    });
+        // 3. Cek Status Pompa (Mulai dengan P)
+        else if (data.startsWith('P')) {
+            let val = data.substring(1);
+            let lbl = document.getElementById('lbl-relay');
+            if (val === "1") {
+                lbl.textContent = "ON";
+                lbl.style.color = "#26a69a"; // Hijau kalau nyala
+            } else {
+                lbl.textContent = "OFF";
+                lbl.style.color = "#ef5350"; // Merah kalau mati
+            }
+        }
+    }
 
-    // Fungsi Connect Bluetooth
     btnConnectBle.addEventListener('click', async () => {
         try {
             logToTerminal("Mencari Micro:bit...");
@@ -219,44 +216,34 @@
                 optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
             });
 
-            logToTerminal("Menghubungkan ke GATT...");
+            logToTerminal("Connecting...");
             const server = await bluetoothDevice.gatt.connect();
-            
-            logToTerminal("Mencari UART Service...");
             const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
-            
-            logToTerminal("Mencari TX Characteristic...");
             const characteristic = await service.getCharacteristic('6e400002-b5a3-f393-e0a9-e50e24dcca9e');
-            
-            characteristic.startNotifications();
-            characteristic.addEventListener('characteristicvaluechanged', (event) => {
-                let decoder = new TextDecoder('utf-8');
-                let data = decoder.decode(event.target.value);
-                logToTerminal("Data Diterima: " + data);
-                
-                // Parsing sederhana (format: J[angka]T[angka])
-                if(data.includes('J')) {
-                    let jarak = data.split('J')[1].split('T')[0];
-                    document.getElementById('val-jarak').innerHTML = jarak + '<span class="sensor-unit"> CM</span>';
-                }
-                if(data.includes('T')) {
-                    let temp = data.split('T')[1];
-                    document.getElementById('val-temp').textContent = temp;
-                }
-            });
 
+            await characteristic.startNotifications();
+            logToTerminal("Terhubung! Menunggu data...");
+            
             document.getElementById('status-bt').textContent = "BT ONLINE";
             document.getElementById('status-bt').style.color = "#26a69a";
-            logToTerminal("Koneksi Berhasil!");
+
+            characteristic.addEventListener('characteristicvaluechanged', (event) => {
+                let decoder = new TextDecoder('utf-8');
+                let rawString = decoder.decode(event.target.value);
+                
+                // Tampilkan di Log
+                logToTerminal(rawString);
+                
+                // Update ke Angka di UI
+                updateUI(rawString);
+            });
 
         } catch (error) {
             logToTerminal("Error: " + error);
         }
     });
 
-    document.getElementById('btnClearLog').addEventListener('click', () => {
-        terminalLog.innerHTML = "";
-    });
+    document.getElementById('btnClearLog').addEventListener('click', () => terminalLog.innerHTML = "");
 </script>
 </body>
 </html>
