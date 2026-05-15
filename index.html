@@ -29,15 +29,15 @@
             overflow-x: hidden;
         }
 
-        /* --- Dekorasi Samping (Full Height) --- */
+        /* --- Dekorasi Samping (Adjusted Position) --- */
         .side-decor-stack {
             position: fixed;
-            top: 10px;    /* Sangat dekat ke atas agar dekat badge status */
-            bottom: 20px; 
-            height: 96vh; /* Membentang hampir seluruh tinggi layar */
+            top: 80px;    /* Diturunkan agar tidak mentok ke badge DB Offline */
+            bottom: 30px; 
+            height: calc(100vh - 110px); /* Menyesuaikan tinggi sisa layar */
             z-index: 1;
             display: flex;
-            flex-direction: column-reverse; /* Atas adalah elemen terakhir di HTML */
+            flex-direction: column-reverse; 
             justify-content: space-between; 
             align-items: center;
             width: 110px;
@@ -49,8 +49,8 @@
             filter: drop-shadow(0 8px 15px rgba(0,0,0,0.12));
         }
 
-        .left-stack { left: 35px; }
-        .right-stack { right: 35px; }
+        .left-stack { left: 40px; }
+        .right-stack { right: 40px; }
 
         @keyframes leafFloat {
             0% { transform: translateY(0) rotate(0deg); }
@@ -59,12 +59,13 @@
         }
         .anim-leaf { animation: leafFloat 3.5s ease-in-out infinite; }
 
-        /* --- UI Components --- */
+        /* --- Header & Layout --- */
         .wrapper { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
-        .header { text-align: center; margin: 40px 0 30px; }
+        .header { text-align: center; margin: 50px 0 35px; }
         .logo-container { position: relative; display: inline-block; width: 280px; }
         .logo-main { width: 100%; filter: drop-shadow(0 8px 15px rgba(0,0,0,0.12)); }
         
+        /* Status Badge (Tetap di pojok paling atas) */
         .status-fixed { position: fixed; top: 15px; right: 15px; z-index: 100; display: flex; flex-direction: column; gap: 6px; }
         .badge { background: white; padding: 6px 16px; border-radius: 30px; font-size: 0.82em; font-weight: 900; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #eee; }
         
@@ -78,17 +79,12 @@
         .btn-ble { background: #26a69a; }
 
         .sensor-val { font-size: 2.8em; font-weight: 900; margin: 10px 0; }
-        .sensor-unit { font-size: 0.5em; color: #78909c; }
-
-        .mode-box { background: white; display: inline-flex; padding: 6px; border-radius: 40px; border: 3px solid #e0f2f1; margin-bottom: 25px; }
-        .mode-btn { padding: 10px 25px; border: none; border-radius: 30px; font-weight: 800; cursor: pointer; background: transparent; color: #b0bec5; }
-        .mode-btn.active { background: var(--accent-teal); color: white; }
-
+        
         .terminal-container { background: #00695c; border-radius: var(--border-radius); padding: 20px; border: 5px solid white; color: white; }
         .log-screen { height: 140px; overflow-y: auto; font-family: 'Space Mono', monospace; font-size: 11px; background: rgba(0,0,0,0.1); border-radius: 15px; padding: 10px; }
 
         @media (max-width: 1200px) {
-            .side-decor-stack { width: 70px; left: 10px; right: 10px; }
+            .side-decor-stack { width: 80px; left: 15px; right: 15px; }
         }
         @media (max-width: 950px) {
             .side-decor-stack { display: none; }
@@ -119,51 +115,10 @@
         <div class="logo-container">
             <img src="https://raw.githubusercontent.com/aisyahzaahirahrr/garden-crossing/89b4cc8013761e113366ea2b6522913f620a7760/Group%203.png" class="logo-main">
         </div>
-        <div style="margin-top:10px;"><span style="background:white; padding:6px 20px; border-radius:20px; font-weight:800; color:var(--accent-teal); font-size: 0.9em;">Monitoring & Control Otomatis</span></div>
+        <div style="margin-top:15px;"><span style="background:white; padding:6px 20px; border-radius:20px; font-weight:800; color:var(--accent-teal); font-size: 0.9em; border: 2px solid #b2dfdb;">Monitoring & Control Otomatis</span></div>
     </div>
 
-    <div class="grid-main">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-cloud"></i> Firebase Sync</div>
-            <input type="text" id="fb-apiKey" placeholder="API Key">
-            <input type="text" id="fb-dbUrl" placeholder="Database URL">
-            <button class="btn btn-fb" id="btn-connect-fb">Connect</button>
-        </div>
-        <div class="card">
-            <div class="card-title"><i class="fab fa-bluetooth"></i> Bluetooth</div>
-            <button class="btn btn-ble" id="btn-connect-ble">Connect Microbit</button>
-        </div>
     </div>
 
-    <div style="text-align:center;">
-        <div class="mode-box">
-            <button class="mode-btn" id="mode-manual">Manual</button>
-            <button class="mode-btn active" id="mode-auto">Auto</button>
-        </div>
-    </div>
-
-    <div class="grid-main">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-tint"></i> Level Air</div>
-            <div class="sensor-val" id="val-jarak">--<span class="sensor-unit"> CM</span></div>
-        </div>
-        <div class="card">
-            <div class="card-title"><i class="fas fa-thermometer-half"></i> Suhu</div>
-            <div class="sensor-val" style="color:#ef5350;"><span id="val-temp">--</span>°C</div>
-        </div>
-    </div>
-
-    <div class="terminal-container">
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:11px; font-weight:bold;">
-            <span>SYSTEM LOG</span>
-            <span id="btnClearLog" style="cursor:pointer; opacity:0.6;">CLEAR</span>
-        </div>
-        <div id="terminalLog" class="log-screen"></div>
-    </div>
-</div>
-
-<script type="module">
-    // Logika Firebase/Bluetooth Anda tetap di sini...
-</script>
 </body>
 </html>
