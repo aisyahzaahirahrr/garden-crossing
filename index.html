@@ -54,19 +54,14 @@
         /* Keyframes Animasi */
         @keyframes rotateTako { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .anim-rotate { animation: rotateTako 8s linear infinite; }
-
         @keyframes pulseCoin { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
         .anim-pulse { animation: pulseCoin 2s ease-in-out infinite; }
-
         @keyframes shakeRed { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
         .anim-shake { animation: shakeRed 1.5s ease-in-out infinite; }
-
         @keyframes jumpBlue { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         .anim-jump { animation: jumpBlue 1.2s ease-in-out infinite; }
-
         @keyframes leafFloat { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(5deg); } }
         .anim-leaf { animation: leafFloat 3s ease-in-out infinite; }
-
         @keyframes squeezeCream { 0%, 100% { transform: scaleX(1) scaleY(1); } 50% { transform: scaleX(1.1) scaleY(0.9); } }
         .anim-squeeze { animation: squeezeCream 2s ease-in-out infinite; }
 
@@ -88,8 +83,8 @@
         .card { background: var(--panel-bg); border-radius: var(--border-radius); padding: 26px; border: 5px solid white; box-shadow: 0 12px 35px rgba(0,0,0,0.08); }
         .card-title { font-size: 0.85em; font-weight: 900; text-transform: uppercase; color: var(--accent-teal); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
         
-        label { font-size: 11px; font-weight: 800; color: #90a4ae; margin-left: 10px; text-transform: uppercase; display: block; margin-top: 10px; }
-        input { width: 100%; padding: 13px 18px; border-radius: 22px; border: 2px solid #e0f2f1; margin-bottom: 5px; font-weight: 700; outline: none; transition: 0.3s; }
+        label { font-size: 11px; font-weight: 800; color: #90a4ae; margin-left: 10px; text-transform: uppercase; display: block; margin-top: 8px; }
+        input { width: 100%; padding: 12px 18px; border-radius: 22px; border: 2px solid #e0f2f1; margin-bottom: 5px; font-weight: 700; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--accent-teal); }
         
         .btn { width: 100%; padding: 14px; border-radius: 28px; border: none; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; transition: 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.1); margin-top: 15px; }
@@ -138,16 +133,18 @@
 
     <div class="grid-main">
         <div class="card">
-            <div class="card-title"><i class="fas fa-cloud"></i> Firebase Cloud</div>
-            <label>Database URL</label>
-            <input type="text" id="fb-dbUrl" placeholder="https://project-id.firebaseio.com">
-            <label>Node Path</label>
+            <div class="card-title"><i class="fas fa-cloud"></i> Firebase Sync</div>
+            <label>API KEY</label>
+            <input type="text" id="fb-apiKey" placeholder="AIzaSy...">
+            <label>DATABASE URL</label>
+            <input type="text" id="fb-dbUrl" placeholder="https://...">
+            <label>NODE PATH</label>
             <input type="text" id="fb-nodePath" placeholder="monitoring/kebun">
-            <button class="btn btn-fb" id="btn-connect-fb">Connect Firebase</button>
+            <button class="btn btn-fb" id="btn-connect-fb">Hubungkan Firebase</button>
         </div>
         <div class="card">
             <div class="card-title"><i class="fab fa-bluetooth"></i> Micro:bit BLE</div>
-            <p style="font-size:12px; margin:15px 0; color:#90a4ae;">Gunakan Chrome & HTTPS untuk koneksi Bluetooth.</p>
+            <p style="font-size:12px; margin:15px 0; color:#90a4ae;">Pastikan Micro:bit menyalakan UART Service.</p>
             <button class="btn btn-ble" id="btn-connect-ble">Connect Microbit</button>
         </div>
     </div>
@@ -178,7 +175,6 @@
 </div>
 
 <script>
-    // --- VARIABEL & KONFIGURASI ---
     let bluetoothDevice;
     let terminalLog = document.getElementById('terminalLog');
     let btnConnectBle = document.getElementById('btn-connect-ble');
@@ -195,67 +191,56 @@
         terminalLog.scrollTop = terminalLog.scrollHeight;
     }
 
-    // --- 1. LOGIKA FIREBASE ---
+    // --- LOGIKA FIREBASE ---
     btnConnectFb.addEventListener('click', () => {
         fbURL = document.getElementById('fb-dbUrl').value.trim();
         fbPath = document.getElementById('fb-nodePath').value.trim();
+        const apiKey = document.getElementById('fb-apiKey').value.trim();
 
-        if (!fbURL || !fbPath) {
-            logToTerminal("ERROR: Database URL & Node Path harus diisi!");
+        if (!fbURL || !fbPath || !apiKey) {
+            logToTerminal("ERROR: API Key, URL, dan Node Path wajib diisi!");
             return;
         }
 
         if (!fbURL.endsWith('/')) fbURL += '/';
-        
         isFirebaseConnected = true;
-        logToTerminal("Firebase Aktif! Menunggu data Bluetooth...");
-        
+        logToTerminal("Firebase Siap!");
         document.getElementById('status-fb').textContent = "DB ONLINE";
         document.getElementById('status-fb').style.color = "#26a69a";
         btnConnectFb.style.backgroundColor = "#81c784";
-        btnConnectFb.textContent = "Firebase Connected!";
+        btnConnectFb.textContent = "Terhubung!";
     });
 
     async function sendToFirebase(key, value) {
         if (!isFirebaseConnected) return;
         const targetURL = `${fbURL}${fbPath}/${key}.json`;
         try {
-            await fetch(targetURL, {
-                method: 'PUT',
-                body: JSON.stringify(value)
-            });
-        } catch (e) { console.error("FB Error:", e); }
+            await fetch(targetURL, { method: 'PUT', body: JSON.stringify(value) });
+        } catch (e) { console.error("Firebase Error:", e); }
     }
 
-    // --- 2. LOGIKA PARSING DATA (DARI MICROBIT) ---
-    function processIncomingData(dataRaw) {
+    // --- LOGIKA UTAMA (TIDAK BERUBAH) ---
+    function updateUIAndFirebase(dataRaw) {
         let data = dataRaw.trim();
-
-        // Format J (Jarak)
         if (data.startsWith('J')) {
-            let val = data.substring(1); 
+            let val = data.substring(1);
             document.getElementById('val-jarak').innerHTML = `${val}<span class="sensor-unit"> CM</span>`;
             sendToFirebase("jarak", val);
-        } 
-        // Format T (Suhu)
-        else if (data.startsWith('T')) {
+        } else if (data.startsWith('T')) {
             let val = data.substring(1);
             document.getElementById('val-temp').textContent = val;
             sendToFirebase("suhu", val);
-        }
-        // Format P (Pompa)
-        else if (data.startsWith('P')) {
+        } else if (data.startsWith('P')) {
             let val = data.substring(1);
             let lbl = document.getElementById('lbl-relay');
-            let statusText = (val === "1") ? "ON" : "OFF";
-            
-            lbl.textContent = statusText;
+            let status = (val === "1") ? "ON" : "OFF";
+            lbl.textContent = status;
             lbl.style.color = (val === "1") ? "#26a69a" : "#ef5350";
-            sendToFirebase("pompa", statusText);
+            sendToFirebase("pompa", status);
         }
     }
 
-    // --- 3. LOGIKA BLUETOOTH ---
+    // --- LOGIKA BLUETOOTH ---
     btnConnectBle.addEventListener('click', async () => {
         try {
             logToTerminal("Mencari Micro:bit...");
@@ -263,28 +248,19 @@
                 filters: [{ namePrefix: 'BBC micro:bit' }],
                 optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
             });
-
-            logToTerminal("Menghubungkan ke Bluetooth...");
             const server = await bluetoothDevice.gatt.connect();
             const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
             const characteristic = await service.getCharacteristic('6e400002-b5a3-f393-e0a9-e50e24dcca9e');
-
             await characteristic.startNotifications();
-            logToTerminal("Bluetooth Terhubung!");
-            
+            logToTerminal("Bluetooth Connected!");
             document.getElementById('status-bt').textContent = "BT ONLINE";
             document.getElementById('status-bt').style.color = "#26a69a";
-
-            characteristic.addEventListener('characteristicvaluechanged', (event) => {
-                let decoder = new TextDecoder('utf-8');
-                let rawString = decoder.decode(event.target.value);
-                logToTerminal(rawString); // Munculkan di log
-                processIncomingData(rawString); // Update UI & Firebase
+            characteristic.addEventListener('characteristicvaluechanged', (e) => {
+                let raw = new TextDecoder().decode(e.target.value);
+                logToTerminal(raw);
+                updateUIAndFirebase(raw);
             });
-
-        } catch (error) {
-            logToTerminal("Gagal Koneksi: " + error);
-        }
+        } catch (e) { logToTerminal("Koneksi Gagal: " + e); }
     });
 
     document.getElementById('btnClearLog').addEventListener('click', () => terminalLog.innerHTML = "");
