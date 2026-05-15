@@ -29,16 +29,16 @@
             overflow-x: hidden;
         }
 
-        /* Container untuk dekorasi samping yang menumpuk */
+        /* --- Dekorasi Samping (Stack) --- */
         .side-decor-stack {
             position: fixed;
             bottom: 20px;
             z-index: 1;
             display: flex;
-            flex-direction: column-reverse; /* Menyusun dari bawah ke atas */
+            flex-direction: column-reverse;
             align-items: center;
-            gap: 20px; /* Jarak antar elemen printilan */
-            width: 110px; /* Ukuran lebar seragam */
+            gap: 20px;
+            width: 110px;
         }
 
         .side-decor-stack img {
@@ -50,18 +50,15 @@
         .left-stack { left: 20px; }
         .right-stack { right: 20px; }
 
-        /* Animasi Daun Jatuh/Melayang (Naik Turun Forever) */
         @keyframes leafFloat {
             0% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-15px) rotate(5deg); }
             100% { transform: translateY(0) rotate(0deg); }
         }
 
-        .anim-leaf {
-            animation: leafFloat 3s ease-in-out infinite;
-        }
+        .anim-leaf { animation: leafFloat 3s ease-in-out infinite; }
 
-        /* --- Header Styling --- */
+        /* --- Header & Logo --- */
         .wrapper { max-width: 960px; margin: 0 auto; position: relative; z-index: 2; }
         .header { text-align: center; margin: 60px 0 35px; }
         .logo-container { position: relative; display: inline-block; width: 320px; }
@@ -71,34 +68,41 @@
         .sq-red { top: -65px; left: 50%; transform: translateX(-50%); }
         .sq-blue { top: -45px; right: 5px; }
 
-        /* --- UI Components --- */
+        /* --- Komponen UI --- */
         .status-fixed { position: fixed; top: 15px; right: 15px; z-index: 100; display: flex; flex-direction: column; gap: 6px; }
         .badge { background: white; padding: 6px 16px; border-radius: 30px; font-size: 0.82em; font-weight: 900; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .badge.online { color: var(--accent-green); border: 2px solid var(--accent-green); }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 28px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; margin-bottom: 28px; }
+
+        /* Grid disesuaikan untuk 2 kartu utama */
+        .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; margin-bottom: 28px; }
+        
         .card { background: var(--panel-bg); border-radius: var(--border-radius); padding: 26px; border: 5px solid white; box-shadow: 0 12px 35px rgba(0,0,0,0.08); }
         .card-title { font-size: 0.85em; font-weight: 900; text-transform: uppercase; color: var(--accent-teal); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+        
         label { display: block; font-size: 0.78em; font-weight: 800; margin-bottom: 6px; color: #4db6ac; }
         input { width: 100%; padding: 13px 18px; border-radius: 22px; border: 2px solid #e0f2f1; margin-bottom: 14px; font-weight: 700; outline: none; }
+        
         .btn { width: 100%; padding: 14px; border-radius: 28px; border: none; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; box-shadow: 0 5px 0 rgba(0,0,0,0.1); transition: 0.2s; }
         .btn-fb { background: #4db6ac; }
         .btn-ble { background: #26a69a; }
+
         .sensor-val { font-size: 3.1em; font-weight: 900; line-height: 1; margin: 12px 0; }
         .sensor-unit { font-size: 0.45em; color: #78909c; }
         .chart-container { height: 68px; margin-top: 12px; }
+
         .relay-card { text-align: center; margin-bottom: 30px; }
         .relay-status { font-size: 2.8em; font-weight: 900; margin: 12px 0; }
         .relay-card.on .relay-status { color: var(--accent-green); }
+
         .terminal-container { background: #00695c; border-radius: var(--border-radius); padding: 24px; border: 5px solid white; color: white; margin-bottom: 40px; }
         .log-screen { height: 160px; overflow-y: auto; font-family: 'Space Mono', monospace; font-size: 12px; background: rgba(0,0,0,0.15); border-radius: 20px; padding: 12px; }
+        
         .subtitle-pill { background: white; color: var(--accent-teal); padding: 8px 32px; border-radius: 30px; font-weight: 800; font-size: 1.1em; display: inline-block; margin-top: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); border: 3px solid #b2dfdb; }
         .mode-box { background: white; display: inline-flex; padding: 8px; border-radius: 40px; border: 4px solid #e0f2f1; }
         .mode-btn { padding: 12px 32px; border: none; border-radius: 30px; font-weight: 800; cursor: pointer; background: transparent; color: #78909c; transition: 0.3s; }
         .mode-btn.active { background: var(--accent-teal); color: white; box-shadow: 0 6px 15px rgba(38, 166, 154, 0.3); }
 
         @media (max-width: 768px) {
-            .grid-2 { grid-template-columns: 1fr; }
             .side-decor-stack { width: 70px; opacity: 0.7; gap: 10px; }
         }
     </style>
@@ -106,14 +110,14 @@
 <body>
 
 <div class="side-decor-stack left-stack">
-    <img src="https://raw.githubusercontent.com/aisyahzaahirahrr/garden-crossing/89b4cc8013761e113366ea2b6522913f620a7760/Group%2012.png" alt="Takoyaki Blue">
+    <img src="https://raw.githubusercontent.com/aisyahzaahirahrr/garden-crossing/89b4cc8013761e113366ea2b6522913f620a7760/Group%2012.png" alt="Takoyaki">
     <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/Group%209.png?raw=true" alt="Koin">
     <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/Group%2019.png?raw=true" alt="IJASUKATUPAI">
 </div>
 
 <div class="side-decor-stack right-stack">
     <img src="https://raw.githubusercontent.com/aisyahzaahirahrr/garden-crossing/89b4cc8013761e113366ea2b6522913f620a7760/Group%2016.png" alt="Tupai Krem">
-    <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/Vector%20257.png?raw=true" class="anim-leaf" alt="Daun Melayang">
+    <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/Vector%20257.png?raw=true" class="anim-leaf" alt="Daun">
     <img src="https://github.com/aisyahzaahirahrr/garden-crossing/blob/main/Vector%20274.png?raw=true" alt="Biru Mini">
 </div>
 
@@ -134,7 +138,7 @@
         <div class="subtitle-pill">Monitoring & Control Otomatis</div>
     </div>
 
-    <div class="grid-2">
+    <div class="grid-main" style="grid-template-columns: 1fr 1fr;">
         <div class="card">
             <div class="card-title"><i class="fas fa-cloud"></i> Firebase Cloud Sync</div>
             <label>API KEY</label>
@@ -149,27 +153,41 @@
             <div class="card-title"><i class="fab fa-bluetooth"></i> Micro:bit Bluetooth</div>
             <p style="font-size: 13px; margin: 18px 0; color: #546e7a;">Pastikan Bluetooth UART aktif di MakeCode</p>
             <button class="btn btn-ble" id="btn-connect-ble"><i class="fab fa-bluetooth-b"></i> Connect Microbit</button>
+            <button class="btn" id="btn-disconnect-ble" style="display:none; background:#ef5350;"><i class="fas fa-times"></i> Disconnect</button>
         </div>
     </div>
 
-    <div class="grid-3">
+    <div style="text-align:center; margin:25px 0 35px;">
+        <div class="mode-box">
+            <button class="mode-btn" id="mode-manual">Manual</button>
+            <button class="mode-btn active" id="mode-auto">Otomatis</button>
+        </div>
+    </div>
+
+    <div class="grid-main">
         <div class="card">
             <div class="card-title"><i class="fas fa-tint"></i> ULTRASONIK 1</div>
             <div class="sensor-val" id="val-jarak">--<span class="sensor-unit"> CM</span></div>
+            <div class="sensor-info">Pompa ON jika jarak ≥ 30 cm</div>
+            <div class="chart-container"><canvas id="chart-jarak"></canvas></div>
         </div>
-        <div class="card">
-            <div class="card-title"><i class="fas fa-water"></i> ULTRASONIK 2</div>
-            <div class="sensor-val" id="val-jarak-manual" style="color:var(--accent-teal);">--<span class="sensor-unit"> CM</span></div>
-        </div>
+
         <div class="card">
             <div class="card-title"><i class="fas fa-thermometer-half"></i> DHT22</div>
-            <div class="sensor-val" style="font-size:2.6em; color:#ef5350;"><span id="val-temp">--</span>°C</div>
+            <div class="sensor-val" style="font-size:3.1em; color:#ef5350;">
+                <span id="val-temp">--</span>°C
+            </div>
+            <div class="sensor-info">Suhu Udara Terkini</div>
         </div>
     </div>
 
     <div class="card relay-card" id="card-relay">
         <div class="card-title" style="justify-content:center;"><i class="fas fa-bolt"></i> POMPA RELAY (P13)</div>
         <div class="relay-status" id="lbl-relay">OFF</div>
+        <div id="manual-relay-ui" style="display:none; margin-top:20px; justify-content:center; gap:15px;">
+            <button class="btn" style="background:#66bb6a; width:auto; padding:12px 40px;" onclick="manualRelay(1)">ON</button>
+            <button class="btn" style="background:#ef5350; width:auto; padding:12px 40px;" onclick="manualRelay(0)">OFF</button>
+        </div>
     </div>
 
     <div class="terminal-container">
@@ -181,9 +199,32 @@
     </div>
 </div>
 
-<script>
-    // Logic script Anda tetap sama di sini
-    console.log("Dashboard Garden Crossing Ready!");
-</script>
-</body>
-</html>
+<script type="module">
+import { initializeApp, getApps, deleteApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+const SVC = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const RX  = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; 
+const TX  = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; 
+
+const S = {
+    db: null, fbPath: "smarthome/ruangan1", device: null, rxChar: null, 
+    bleBuffer: '', mode: 'auto', relay: false, charts: {}
+};
+
+const $ = id => document.getElementById(id);
+
+function log(msg, color = "#e0f2f1") {
+    const t = new Date().toLocaleTimeString('id-ID', { hour12: false });
+    const term = $('terminalLog');
+    term.insertAdjacentHTML('afterbegin', `<div style="color:${color}">[${t}] ${msg}</div>`);
+    if (term.children.length > 70) term.removeChild(term.lastChild);
+}
+
+function initCharts() {
+    const cfg = (color) => ({
+        type: 'line', 
+        data: { labels: [], datasets: [{ data: [], borderColor: color, tension: 0.4, pointRadius: 0, borderWidth: 2.5 }] },
+        options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, responsive: true, maintainAspectRatio: false }
+    });
+    S.charts.jarak = new Chart
